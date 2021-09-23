@@ -30,7 +30,7 @@ void print_matrix(const vector<vector<int>>& matrix){
     };
 }
 
-void linear_multiply(vector<vector<int>>& matrix_A_, vector<vector<int>>& matrix_B_, vector<vector<int>>& matrix_C_) {
+void linear_multiply(vector<vector<int>>& matrix_A_, vector<vector<int>>& matrix_B_, vector<vector<int>>& matrix_C_, int parallel_num) {
     ulong n_1 = matrix_A_.size();
     ulong n_2 = matrix_A_[0].size();
     ulong n_3 = matrix_B_[0].size();
@@ -45,18 +45,16 @@ void linear_multiply(vector<vector<int>>& matrix_A_, vector<vector<int>>& matrix
     }
 }
 
-void block_multiply(vector<vector<int>> matrix_1, vector<vector<int>> matrix_2){
 
-}
 int main(){
-    int number_of_rows_A = 10 , number_of_columns_A = 10 , number_of_rows_B = 10, number_of_columns_B = 10;
+    int number_of_rows_A = 4 , number_of_columns_A = 4 , number_of_rows_B = 4, number_of_columns_B = 4;
     vector<vector<int>> matrix_A, matrix_B, matrix_C(number_of_rows_A, vector<int>(number_of_rows_B, 0));
     matrix_A = generate_matrix(number_of_rows_A, number_of_columns_A);
     matrix_B = generate_matrix(number_of_rows_B, number_of_columns_B);
     print_matrix(matrix_A);
     print_matrix(matrix_B);
     print_matrix(matrix_C);
-    linear_multiply(matrix_A, matrix_B, matrix_C);
+    linear_multiply(matrix_A, matrix_B, matrix_C, 1);
     print_matrix(matrix_C);
     return 0;
 }
