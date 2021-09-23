@@ -38,14 +38,18 @@ void linear_multiply(vector<vector<int>>& matrix_A_, vector<vector<int>>& matrix
     ulong n1 = matrix_A_.size();
     ulong n2 = matrix_A_[0].size();
     ulong n3 = matrix_B_[0].size();
-#pragma omp for schedule(static)
-    for (int i = 0; i < n1; i++) {
-        for (int j = 0; j < n3; j++) {
-            for (int k = 0; k < n2; k++) {
+    clock_t begin_time = clock();
+    int i, j, k;
+#pragma omp parallel shared ( matrix_A_, matrix_B_, matrix_C_, n1, n2, n3) private ( i, j, k ) default(none)
+#pragma omp for
+    for (i = 0; i < n1; i++) {
+        for (j = 0; j < n3; j++) {
+            for (k = 0; k < n2; k++) {
                 matrix_C_[i][j] += matrix_A_[i][k] * matrix_B_[k][j];
             }
         }
     }
+    cout << "Parallel time: "<<float( clock () - begin_time ) / CLOCKS_PER_SEC  <<"\n";
 }
 
 int main(){
