@@ -82,16 +82,16 @@ void block_variant_of_multiplication(vector<vector<int>>& matrix_A_, vector<vect
 }
 
 int main(){
-    int number_of_rows_A = 4, number_of_columns_A = 4, number_of_rows_B = 4, number_of_columns_B = 4;
+    int number_of_rows_A = 500, number_of_columns_A = 500, number_of_rows_B = 500, number_of_columns_B = 500;
     vector<vector<int>> matrix_A, matrix_B, matrix_C(number_of_rows_A, vector<int>(number_of_rows_B, 0));
     matrix_A = generate_matrix(number_of_rows_A, number_of_columns_A);
     matrix_B = generate_matrix(number_of_rows_B, number_of_columns_B);
     //print_matrix(matrix_A);
     //print_matrix(matrix_B);
     //print_matrix(matrix_C);
-    linear_variant_of_multiplication(matrix_A, matrix_B, matrix_C, 2);
-    print_matrix(matrix_C);
-    //(matrix_A, matrix_B, matrix_C, 1, 4);
+    //linear_variant_of_multiplication(matrix_A, matrix_B, matrix_C, 2);
+    //print_matrix(matrix_C);
+    block_variant_of_multiplication(matrix_A, matrix_B, matrix_C, 2, 100);
     //print_matrix(matrix_C);
     return 0;
 }
