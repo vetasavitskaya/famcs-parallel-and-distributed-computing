@@ -34,9 +34,9 @@ vector<vector<int>> generate_matrix(int rows, int columns) {
 }
 
 void linear_variant_of_multiplication(vector<vector<int>>& matrix_A_, vector<vector<int>>& matrix_B_, vector<vector<int>>& matrix_C_, int parallel_num) {
-    ulong n1 = matrix_A_.size();
-    ulong n2 = matrix_A_[0].size();
-    ulong n3 = matrix_B_[0].size();
+    unsigned long n1 = matrix_A_.size();
+    unsigned long n2 = matrix_A_[0].size();
+    unsigned long n3 = matrix_B_[0].size();
     int i, j, k;
     omp_set_num_threads(parallel_num);
     clock_t begin_time = clock();
@@ -52,12 +52,12 @@ void linear_variant_of_multiplication(vector<vector<int>>& matrix_A_, vector<vec
     cout << "Parallel time: " << float(clock() - begin_time) / CLOCKS_PER_SEC << "\n";
 }
 void block_variant_of_multiplication(vector<vector<int>>& matrix_A_, vector<vector<int>>& matrix_B_, vector<vector<int>>& matrix_C_, int parallel_num, int block_size) {
-    ulong n1 = matrix_A_.size();
-    ulong n2 = matrix_A_[0].size();
-    ulong n3 = matrix_B_[0].size();
-    ulong q1 = n1 / block_size;
-    ulong q2 = n2 / block_size;
-    ulong q3 = n3 / block_size;
+    unsigned long n1 = matrix_A_.size();
+    unsigned long n2 = matrix_A_[0].size();
+    unsigned long n3 = matrix_B_[0].size();
+    unsigned long q1 = n1 / block_size;
+    unsigned long q2 = n2 / block_size;
+    unsigned long q3 = n3 / block_size;
     clock_t begin_time = clock();
     int i, j, k, i1, j1, k1, i2, j2, k2;
 #pragma omp parallel for if (parallel_num == 1) default(none) shared(matrix_A_, matrix_B_, matrix_C_, n1, n2, n3, q1, q2, q3, parallel_num, block_size) private(i, j, k, i1, i2, j1, j2, k1, k2)
@@ -91,7 +91,7 @@ int main(){
     //print_matrix(matrix_C);
     //linear_variant_of_multiplication(matrix_A, matrix_B, matrix_C, 2);
     //print_matrix(matrix_C);
-    block_variant_of_multiplication(matrix_A, matrix_B, matrix_C, 2, 100);
+    linear_variant_of_multiplication(matrix_A, matrix_B, matrix_C, 1);
     //print_matrix(matrix_C);
     return 0;
 }
