@@ -62,7 +62,7 @@ void block_variant_of_multiplication(vector<vector<int>>& matrix_A_, vector<vect
     int i, j, k, i1, j1, k1, i2, j2, k2;
 #pragma omp parallel for if (parallel_num == 1) default(none) shared(matrix_A_, matrix_B_, matrix_C_, n1, n2, n3, q1, q2, q3, parallel_num, block_size) private(i, j, k, i1, i2, j1, j2, k1, k2)
     for (i1 = 0; i1 < q1; i1++) {
-#pragma omp parallel for if (parallel_num == 1) default(none) shared(matrix_A_, matrix_B_, matrix_C_, n1, n2, n3, q1, q2, q3, parallel_num, block_size, i1) private(i, j, k, i2, j1, j2, k1, k2)
+#pragma omp parallel for if (parallel_num == 2) default(none) shared(matrix_A_, matrix_B_, matrix_C_, n1, n2, n3, q1, q2, q3, parallel_num, block_size, i1) private(i, j, k, i2, j1, j2, k1, k2)
         for (j1 = 0; j1 < q2; j1++) {
             for (k1 = 0; k1 < q3; k1++) {
                 for (i2 = 0; i2 < block_size; i2++) {
@@ -82,7 +82,7 @@ void block_variant_of_multiplication(vector<vector<int>>& matrix_A_, vector<vect
 }
 
 int main(){
-    int number_of_rows_A = 500, number_of_columns_A = 500, number_of_rows_B = 500, number_of_columns_B = 500;
+    int number_of_rows_A = 1500, number_of_columns_A = 1500, number_of_rows_B = 1500, number_of_columns_B = 1500;
     vector<vector<int>> matrix_A, matrix_B, matrix_C(number_of_rows_A, vector<int>(number_of_rows_B, 0));
     matrix_A = generate_matrix(number_of_rows_A, number_of_columns_A);
     matrix_B = generate_matrix(number_of_rows_B, number_of_columns_B);
