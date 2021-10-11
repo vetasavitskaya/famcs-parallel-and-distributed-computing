@@ -20,7 +20,6 @@ plots = []
 for i in range(4):
     _, plot_for_appropriate_matrix_size = plt.subplots()
     plots.append(plot_for_appropriate_matrix_size)
-for i in range(4):
     sequential_for_appropriate_matrix_size = []
     first_loop_for_appropriate_matrix_size = []
     second_loop_for_appropriate_matrix_size = []
