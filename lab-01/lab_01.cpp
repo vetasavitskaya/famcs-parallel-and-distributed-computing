@@ -40,15 +40,15 @@ void print_matrix(const vector<vector<int>> &matrix) {
 
 
 float linear_variant_of_multiplication(vector<vector<int>>& matrix_A_, vector<vector<int>>& matrix_B_,
-                                       vector<vector<int>>& matrix_C_, int parallel_num) {
+                                       vector<vector<int>>& matrix_C_, int loop) {
     unsigned long n1 = matrix_A_.size();
     unsigned long n2 = matrix_A_[0].size();
     unsigned long n3 = matrix_B_[0].size();
     matrix_C_.assign(n1, vector<int>(n3, 0));
     clock_t begin_time = clock();
-#pragma omp parallel for if (parallel_num == 1)
+#pragma omp parallel for if (loop == 1)
     for (int i = 0; i < n1; i++) {
-#pragma omp parallel for if (parallel_num == 2)
+#pragma omp parallel for if (loop == 2)
         for (int j = 0; j < n3; j++) {
             for (int k = 0; k < n2; k++) {
                 matrix_C_[i][j] += matrix_A_[i][k] * matrix_B_[k][j];
@@ -61,7 +61,7 @@ float linear_variant_of_multiplication(vector<vector<int>>& matrix_A_, vector<ve
 
 
 float block_variant_of_multiplication(vector<vector<int>>& matrix_A_, vector<vector<int>>& matrix_B_,
-                                      vector<vector<int>>& matrix_C_, int parallel_num, int block_size) {
+                                      vector<vector<int>>& matrix_C_, int loop, int block_size) {
     unsigned long n1 = matrix_A_.size();
     unsigned long n2 = matrix_A_[0].size();
     unsigned long n3 = matrix_B_[0].size();
@@ -70,9 +70,9 @@ float block_variant_of_multiplication(vector<vector<int>>& matrix_A_, vector<vec
     unsigned long q3 = n3 / block_size;
     matrix_C_.assign(n1, vector<int>(n3, 0));
     clock_t begin_time = clock();
-#pragma omp parallel for if (parallel_num == 1)
+#pragma omp parallel for if (loop == 1)
     for (int i1 = 0; i1 < q1; i1++) {
-#pragma omp parallel for if (parallel_num == 2)
+#pragma omp parallel for if (loop == 2)
         for (int j1 = 0; j1 < q2; j1++) {
             for (int k1 = 0; k1 < q3; k1++) {
                 for (int i2 = 0; i2 < block_size; i2++) {
@@ -100,7 +100,7 @@ string get_json_pair(const string& index, const string& value){
 int main(){
     ofstream results;
     omp_set_dynamic(0);
-    omp_set_num_threads(8);
+    omp_set_num_threads(4);
     results.open("results.csv");
     string size_of_block, size_of_matrix, sequential_result, first_loop_result, second_loop_result;
     int counter = 0;
@@ -140,7 +140,6 @@ int main(){
             first_loop_result += get_json_pair(to_string(counter), to_string(first_loop));
             second_loop_result += get_json_pair(to_string(counter), to_string(second_loop));
             counter++;
-            cout << counter << "\n";
         }
     }
     
