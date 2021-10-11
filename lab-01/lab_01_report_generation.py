@@ -11,8 +11,8 @@ results = json.loads(line)
 with pd.option_context('display.max_rows', None, 'display.max_columns', None):
     print(data)
 
-matrices_sizes = [200, 400, 800, 1600]
-blocks_sizes = [1, 20, 50, 100, 200]
+matrices_sizes = [20, 40, 80, 160]
+blocks_sizes = [1, 2, 5, 10, 20]
 sequential = results["Sequential"]
 first_loop = results["First loop"]
 second_loop = results["Second loop"]
