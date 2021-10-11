@@ -10,8 +10,8 @@
 
 using namespace std;
 
-int sizes_of_matrices[4] = {20, 40, 80, 100};
-int sizes_of_blocks[5] = {1, 2, 5, 10, 20};
+int sizes_of_matrices[4] = {200, 400, 800, 1600};
+int sizes_of_blocks[5] = {1, 20, 50, 100, 200};
 
 
 vector<vector<int>> generate_matrix(int rows, int columns) {
