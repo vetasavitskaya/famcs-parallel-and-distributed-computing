@@ -42,10 +42,28 @@ float linear_variant_of_multiplication(vector<vector<int>>& matrix_A_, vector<ve
     unsigned long n1 = matrix_A_.size();
     unsigned long n2 = matrix_A_[0].size();
     unsigned long n3 = matrix_B_[0].size();
+    matrix_C_.assign(n1, vector<int>(n3, 0));
     clock_t begin_time = clock();
-#pragma omp parallel for if (parallel_num == 1)
+#pragma omp parallel for if (parallel_num == 1) default(none) shared(matrix_A_, matrix_B_, matrix_C_, n1, n2, n3, parallel_num)
     for (int i = 0; i < n1; i++) {
-#pragma omp parallel for if (parallel_num == 2)
+#pragma omp parallel for if (parallel_num == 2) default(none) shared(matrix_A_, matrix_B_, matrix_C_, n1, n2, n3, i)
+        for (int j = 0; j < n3; j++) {
+            for (int k = 0; k < n2; k++) {
+                matrix_C_[i][j] += matrix_A_[i][k] * matrix_B_[k][j];
+            }
+        }
+    }
+    clock_t end_time = clock();
+    return float(end_time - begin_time) / CLOCKS_PER_SEC;
+}
+float linear_variant_of_multiplication_(vector<vector<int>>& matrix_A_, vector<vector<int>>& matrix_B_,
+                                       vector<vector<int>>& matrix_C_, int parallel_num) {
+    unsigned long n1 = matrix_A_.size();
+    unsigned long n2 = matrix_A_[0].size();
+    unsigned long n3 = matrix_B_[0].size();
+    matrix_C_.assign(n1, vector<int>(n3, 0));
+    clock_t begin_time = clock();
+    for (int i = 0; i < n1; i++) {
         for (int j = 0; j < n3; j++) {
             for (int k = 0; k < n2; k++) {
                 matrix_C_[i][j] += matrix_A_[i][k] * matrix_B_[k][j];
@@ -64,15 +82,45 @@ float block_variant_of_multiplication(vector<vector<int>>& matrix_A_, vector<vec
     unsigned long q1 = n1 / block_size;
     unsigned long q2 = n2 / block_size;
     unsigned long q3 = n3 / block_size;
+    matrix_C_.assign(n1, vector<int>(n3, 0));
     clock_t begin_time = clock();
-#pragma omp parallel for if (parallel_num == 1)
+#pragma omp parallel for if (parallel_num == 1) default(none) shared(matrix_A_, matrix_B_, matrix_C_, n1, n2, n3, q1, q2, q3, parallel_num, block_size)
     for (int i1 = 0; i1 < q1; i1++) {
-#pragma omp parallel for if (parallel_num == 2)
+#pragma omp parallel for if (parallel_num == 2) default(none) shared(matrix_A_, matrix_B_, matrix_C_, n1, n2, n3, q1, q2, q3, parallel_num, block_size, i1)
         for (int j1 = 0; j1 < q2; j1++) {
             for (int k1 = 0; k1 < q3; k1++) {
-                for (int i2 = 1; i2 < block_size; i2++) {
-                    for (int j2 = 1; j2 < block_size; j2++) {
-                        for (int k2 = 1; k2 < block_size; k2++) {
+                for (int i2 = 0; i2 < block_size; i2++) {
+                    for (int j2 = 0; j2 < block_size; j2++) {
+                        for (int k2 = 0; k2 < block_size; k2++) {
+                            int i = i1 * block_size + i2;
+                            int j = j1 * block_size + j2;
+                            int k = k1 * block_size + k2;
+                            matrix_C_[i][j] += matrix_A_[i][k] * matrix_B_[k][j];
+                        }
+                    }
+                }
+            }
+        }
+    }
+    clock_t end_time = clock();
+    return float(end_time - begin_time) / CLOCKS_PER_SEC;
+}
+float block_variant_of_multiplication_(vector<vector<int>>& matrix_A_, vector<vector<int>>& matrix_B_,
+                                      vector<vector<int>>& matrix_C_, int parallel_num, int block_size) {
+    unsigned long n1 = matrix_A_.size();
+    unsigned long n2 = matrix_A_[0].size();
+    unsigned long n3 = matrix_B_[0].size();
+    unsigned long q1 = n1 / block_size;
+    unsigned long q2 = n2 / block_size;
+    unsigned long q3 = n3 / block_size;
+    matrix_C_.assign(n1, vector<int>(n3, 0));
+    clock_t begin_time = clock();
+    for (int i1 = 0; i1 < q1; i1++) {
+        for (int j1 = 0; j1 < q2; j1++) {
+            for (int k1 = 0; k1 < q3; k1++) {
+                for (int i2 = 0; i2 < block_size; i2++) {
+                    for (int j2 = 0; j2 < block_size; j2++) {
+                        for (int k2 = 0; k2 < block_size; k2++) {
                             int i = i1 * block_size + i2;
                             int j = j1 * block_size + j2;
                             int k = k1 * block_size + k2;
@@ -110,23 +158,22 @@ int main(){
         vector<vector<int>> matrix_A, matrix_B, matrix_C(number_of_rows_A, vector<int>(number_of_rows_B, 0));
         matrix_A = generate_matrix(number_of_rows_A, number_of_columns_A);
         matrix_B = generate_matrix(number_of_rows_B, number_of_columns_B);
+        for (int sizes_of_block : sizes_of_blocks) {
 
-        for (int block = 0; block < 5; block++) {
-
-            size_of_block += get_json_pair(to_string(counter), to_string(sizes_of_blocks[block]));
+            size_of_block += get_json_pair(to_string(counter), to_string(sizes_of_block));
             size_of_matrix += get_json_pair(to_string(counter), to_string(sizes_of_matrix));
 
-            if (block == 1){
+            if (sizes_of_block == 1) {
 
-                sequential = linear_variant_of_multiplication(matrix_A, matrix_B, matrix_C, 0);
+                sequential = linear_variant_of_multiplication_(matrix_A, matrix_B, matrix_C, 0);
                 first_loop = linear_variant_of_multiplication(matrix_A, matrix_B, matrix_C, 1);
                 second_loop = linear_variant_of_multiplication(matrix_A, matrix_B, matrix_C, 2);
 
             } else {
 
-                sequential = block_variant_of_multiplication(matrix_A, matrix_B, matrix_C, 0, sizes_of_blocks[block]);
-                first_loop = block_variant_of_multiplication(matrix_A, matrix_B, matrix_C, 1, sizes_of_blocks[block]);
-                second_loop = block_variant_of_multiplication(matrix_A, matrix_B, matrix_C, 2, sizes_of_blocks[block]);
+                sequential = block_variant_of_multiplication_(matrix_A, matrix_B, matrix_C, 0, sizes_of_block);
+                first_loop = block_variant_of_multiplication(matrix_A, matrix_B, matrix_C, 1, sizes_of_block);
+                second_loop = block_variant_of_multiplication(matrix_A, matrix_B, matrix_C, 2, sizes_of_block);
             }
 
             sequential_result += get_json_pair(to_string(counter), to_string(sequential));
