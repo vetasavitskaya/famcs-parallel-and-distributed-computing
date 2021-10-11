@@ -16,17 +16,23 @@ blocks_sizes = [1, 20, 50, 100, 200]
 sequential = results["Sequential"]
 first_loop = results["First loop"]
 second_loop = results["Second loop"]
-s = []
-l1 = []
-l2 = []
-
-fig, fist_matrix_plot = plt.subplots()
-for j in range(5):
-    s.append(float(sequential[j.__str__()]))
-    l1.append(float(first_loop[j.__str__()]))
-    l2.append(float(second_loop[j.__str__()]))
-fist_matrix_plot.plot(blocks_sizes, s, label='Sequential for matrix : ' + matrices_sizes[0].__str__())
-fist_matrix_plot.plot(blocks_sizes, l1, label='First loop for matrix : ' + matrices_sizes[0].__str__())
-fist_matrix_plot.plot(blocks_sizes, l2, label='Second loop for matrix : ' + matrices_sizes[0].__str__())
-legend = fist_matrix_plot.legend(loc='upper center', shadow=True, fontsize='x-large')
+plots = []
+for i in range(4):
+    _, plot_for_appropriate_matrix_size = plt.subplots()
+    plots.append(plot_for_appropriate_matrix_size)
+for i in range(4):
+    sequential_for_appropriate_matrix_size = []
+    first_loop_for_appropriate_matrix_size = []
+    second_loop_for_appropriate_matrix_size = []
+    for j in range(5):
+        sequential_for_appropriate_matrix_size.append(float(sequential[(i * 5 + j).__str__()]))
+        first_loop_for_appropriate_matrix_size.append(float(first_loop[(i * 5 + j).__str__()]))
+        second_loop_for_appropriate_matrix_size.append(float(second_loop[(i * 5 + j).__str__()]))
+    plots[i].plot(blocks_sizes, sequential_for_appropriate_matrix_size, label='Sequential for matrix : '
+                                                                              + matrices_sizes[i].__str__())
+    plots[i].plot(blocks_sizes, first_loop_for_appropriate_matrix_size, label='First loop for matrix : '
+                                                                              + matrices_sizes[i].__str__())
+    plots[i].plot(blocks_sizes, second_loop_for_appropriate_matrix_size, label='Second loop for matrix : '
+                                                                               + matrices_sizes[i].__str__())
+    legend = plots[i].legend(loc='best', shadow=True, fontsize='x-large')
 plt.show()
