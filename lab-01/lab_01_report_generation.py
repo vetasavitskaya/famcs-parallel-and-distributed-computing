@@ -20,13 +20,17 @@ plots = []
 for i in range(4):
     _, plot_for_appropriate_matrix_size = plt.subplots()
     plots.append(plot_for_appropriate_matrix_size)
+
     sequential_for_appropriate_matrix_size = []
     first_loop_for_appropriate_matrix_size = []
     second_loop_for_appropriate_matrix_size = []
+
     for j in range(5):
+
         sequential_for_appropriate_matrix_size.append(float(sequential[(i * 5 + j).__str__()]))
         first_loop_for_appropriate_matrix_size.append(float(first_loop[(i * 5 + j).__str__()]))
         second_loop_for_appropriate_matrix_size.append(float(second_loop[(i * 5 + j).__str__()]))
+
     plots[i].plot(blocks_sizes, sequential_for_appropriate_matrix_size, label='Sequential for matrix : '
                                                                               + matrices_sizes[i].__str__())
     plots[i].plot(blocks_sizes, first_loop_for_appropriate_matrix_size, label='First loop for matrix : '
