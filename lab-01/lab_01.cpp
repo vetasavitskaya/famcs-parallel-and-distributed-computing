@@ -5,20 +5,14 @@
 #include <iostream>
 #include <random>
 #include <cstdlib>
+#include <fstream>
 #include <omp.h>
-
 
 using namespace std;
 
-void print_matrix(const vector<vector<int>> &matrix) {
-    for (auto & row : matrix) {
-        for (int column : row) {
-            cout.width(8);
-            cout << column;
-        }
-        cout << endl;
-    }
-}
+int sizes_of_matrices[4] = {20, 40, 80, 100};
+int sizes_of_blocks[5] = {1, 2, 5, 10, 20};
+
 
 vector<vector<int>> generate_matrix(int rows, int columns) {
     vector<vector<int>> matrix;
@@ -33,25 +27,37 @@ vector<vector<int>> generate_matrix(int rows, int columns) {
     return matrix;
 }
 
-void linear_variant_of_multiplication(vector<vector<int>>& matrix_A_, vector<vector<int>>& matrix_B_, vector<vector<int>>& matrix_C_, int parallel_num) {
+void print_matrix(const vector<vector<int>> &matrix) {
+    for (auto & row : matrix) {
+        for (int column : row) {
+            cout.width(8);
+            cout << column;
+        }
+        cout << endl;
+    }
+}
+
+float linear_variant_of_multiplication(vector<vector<int>>& matrix_A_, vector<vector<int>>& matrix_B_,
+                                      vector<vector<int>>& matrix_C_, int parallel_num) {
     unsigned long n1 = matrix_A_.size();
     unsigned long n2 = matrix_A_[0].size();
     unsigned long n3 = matrix_B_[0].size();
-    int i, j, k;
-    omp_set_num_threads(parallel_num);
     clock_t begin_time = clock();
-#pragma omp parallel for if (parallel_num == 1) default(none) shared(matrix_A_, matrix_B_, matrix_C_, n1, n2, n3, parallel_num) private(i, j, k)
-    for (i = 0; i < n1; i++) {
-#pragma omp parallel for if (parallel_num == 2) default(none) shared(matrix_A_, matrix_B_, matrix_C_, n1, n2, n3, i) private(j, k)
-        for (j = 0; j < n3; j++) {
-            for (k = 0; k < n2; k++) {
+#pragma omp parallel for if (parallel_num == 1)
+    for (int i = 0; i < n1; i++) {
+#pragma omp parallel for if (parallel_num == 2)
+        for (int j = 0; j < n3; j++) {
+            for (int k = 0; k < n2; k++) {
                 matrix_C_[i][j] += matrix_A_[i][k] * matrix_B_[k][j];
             }
         }
     }
-    cout << "Parallel time: " << float(clock() - begin_time) / CLOCKS_PER_SEC << "\n";
+    clock_t end_time = clock();
+    return float(end_time - begin_time) / CLOCKS_PER_SEC;
 }
-void block_variant_of_multiplication(vector<vector<int>>& matrix_A_, vector<vector<int>>& matrix_B_, vector<vector<int>>& matrix_C_, int parallel_num, int block_size) {
+
+float block_variant_of_multiplication(vector<vector<int>>& matrix_A_, vector<vector<int>>& matrix_B_,
+                                     vector<vector<int>>& matrix_C_, int parallel_num, int block_size) {
     unsigned long n1 = matrix_A_.size();
     unsigned long n2 = matrix_A_[0].size();
     unsigned long n3 = matrix_B_[0].size();
@@ -59,18 +65,17 @@ void block_variant_of_multiplication(vector<vector<int>>& matrix_A_, vector<vect
     unsigned long q2 = n2 / block_size;
     unsigned long q3 = n3 / block_size;
     clock_t begin_time = clock();
-    int i, j, k, i1, j1, k1, i2, j2, k2;
-#pragma omp parallel for if (parallel_num == 1) default(none) shared(matrix_A_, matrix_B_, matrix_C_, n1, n2, n3, q1, q2, q3, parallel_num, block_size) private(i, j, k, i1, i2, j1, j2, k1, k2)
-    for (i1 = 0; i1 < q1; i1++) {
-#pragma omp parallel for if (parallel_num == 2) default(none) shared(matrix_A_, matrix_B_, matrix_C_, n1, n2, n3, q1, q2, q3, parallel_num, block_size, i1) private(i, j, k, i2, j1, j2, k1, k2)
-        for (j1 = 0; j1 < q2; j1++) {
-            for (k1 = 0; k1 < q3; k1++) {
-                for (i2 = 0; i2 < block_size; i2++) {
-                    for (j2 = 0; j2 < block_size; j2++) {
-                        for (k2 = 0; k2 < block_size; k2++) {
-                            i = i1 * block_size + i2;
-                            j = j1 * block_size + j2;
-                            k = k1 * block_size + k2;
+#pragma omp parallel for if (parallel_num == 1)
+    for (int i1 = 0; i1 < q1; i1++) {
+#pragma omp parallel for if (parallel_num == 2)
+        for (int j1 = 0; j1 < q2; j1++) {
+            for (int k1 = 0; k1 < q3; k1++) {
+                for (int i2 = 1; i2 < block_size; i2++) {
+                    for (int j2 = 1; j2 < block_size; j2++) {
+                        for (int k2 = 1; k2 < block_size; k2++) {
+                            int i = i1 * block_size + i2;
+                            int j = j1 * block_size + j2;
+                            int k = k1 * block_size + k2;
                             matrix_C_[i][j] += matrix_A_[i][k] * matrix_B_[k][j];
                         }
                     }
@@ -78,20 +83,65 @@ void block_variant_of_multiplication(vector<vector<int>>& matrix_A_, vector<vect
             }
         }
     }
-    cout << "Parallel time: " << float(clock() - begin_time) / CLOCKS_PER_SEC << "\n";
+    clock_t end_time = clock();
+    return float(end_time - begin_time) / CLOCKS_PER_SEC;
+}
+
+string get_json_pair(const string& index, const string& value){
+    return '"' + index + '"' + ": " + value + ", ";
 }
 
 int main(){
-    int number_of_rows_A = 1500, number_of_columns_A = 1500, number_of_rows_B = 1500, number_of_columns_B = 1500;
-    vector<vector<int>> matrix_A, matrix_B, matrix_C(number_of_rows_A, vector<int>(number_of_rows_B, 0));
-    matrix_A = generate_matrix(number_of_rows_A, number_of_columns_A);
-    matrix_B = generate_matrix(number_of_rows_B, number_of_columns_B);
-    //print_matrix(matrix_A);
-    //print_matrix(matrix_B);
-    //print_matrix(matrix_C);
-    //linear_variant_of_multiplication(matrix_A, matrix_B, matrix_C, 2);
-    //print_matrix(matrix_C);
-    linear_variant_of_multiplication(matrix_A, matrix_B, matrix_C, 1);
-    //print_matrix(matrix_C);
+    ofstream results;
+    omp_set_dynamic(0);
+    omp_set_num_threads(8);
+    results.open("results.csv");
+    string size_of_block, size_of_matrix, sequential_result, first_loop_result, second_loop_result;
+    int counter = 0;
+    for (int sizes_of_matrix : sizes_of_matrices) {
+
+        float sequential, first_loop, second_loop = 0;
+
+        int number_of_rows_A = sizes_of_matrix,
+                number_of_columns_A = sizes_of_matrix,
+                number_of_rows_B = sizes_of_matrix,
+                number_of_columns_B = sizes_of_matrix;
+
+        vector<vector<int>> matrix_A, matrix_B, matrix_C(number_of_rows_A, vector<int>(number_of_rows_B, 0));
+        matrix_A = generate_matrix(number_of_rows_A, number_of_columns_A);
+        matrix_B = generate_matrix(number_of_rows_B, number_of_columns_B);
+
+        for (int block = 0; block < 5; block++) {
+
+            size_of_block += get_json_pair(to_string(counter), to_string(sizes_of_blocks[block]));
+            size_of_matrix += get_json_pair(to_string(counter), to_string(sizes_of_matrix));
+
+            if (block == 1){
+
+                sequential = linear_variant_of_multiplication(matrix_A, matrix_B, matrix_C, 0);
+                first_loop = linear_variant_of_multiplication(matrix_A, matrix_B, matrix_C, 1);
+                second_loop = linear_variant_of_multiplication(matrix_A, matrix_B, matrix_C, 2);
+
+            } else {
+
+                sequential = block_variant_of_multiplication(matrix_A, matrix_B, matrix_C, 0, sizes_of_blocks[block]);
+                first_loop = block_variant_of_multiplication(matrix_A, matrix_B, matrix_C, 1, sizes_of_blocks[block]);
+                second_loop = block_variant_of_multiplication(matrix_A, matrix_B, matrix_C, 2, sizes_of_blocks[block]);
+            }
+
+            sequential_result += get_json_pair(to_string(counter), to_string(sequential));
+            first_loop_result += get_json_pair(to_string(counter), to_string(first_loop));
+            second_loop_result += get_json_pair(to_string(counter), to_string(second_loop));
+            counter++;
+            cout << counter << "\n";
+        }
+    }
+    results << "{ ";
+    results << "\"Size of matrices\": {" << size_of_matrix.substr(0, size_of_matrix.size()-2).c_str() << "}" << ", ";
+    results << "\"Size of blocks\": {" << size_of_block.substr(0, size_of_block.size()-2).c_str() << "}" << ", ";
+    results << "\"Sequential\": {" << sequential_result.substr(0, sequential_result.size()-2).c_str() << "}" << ", ";
+    results << "\"First loop\": {" << first_loop_result.substr(0, first_loop_result.size()-2).c_str() << "}" << ", ";
+    results << "\"Second loop\": {" << second_loop_result.substr(0, second_loop_result.size()-2).c_str() << "}" << "}";
+    results.close();
     return 0;
 }
