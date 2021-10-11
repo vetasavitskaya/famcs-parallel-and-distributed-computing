@@ -40,15 +40,15 @@ void print_matrix(const vector<vector<int>> &matrix) {
 
 
 float linear_variant_of_multiplication(vector<vector<int>>& matrix_A_, vector<vector<int>>& matrix_B_,
-                                      vector<vector<int>>& matrix_C_, int parallel_num) {
+                                       vector<vector<int>>& matrix_C_, int parallel_num) {
     unsigned long n1 = matrix_A_.size();
     unsigned long n2 = matrix_A_[0].size();
     unsigned long n3 = matrix_B_[0].size();
     matrix_C_.assign(n1, vector<int>(n3, 0));
     clock_t begin_time = clock();
-#pragma omp parallel for if (parallel_num == 1) default(none) shared(matrix_A_, matrix_B_, matrix_C_, n1, n2, n3, parallel_num)
+#pragma omp parallel for if (parallel_num == 1)
     for (int i = 0; i < n1; i++) {
-#pragma omp parallel for if (parallel_num == 2) default(none) shared(matrix_A_, matrix_B_, matrix_C_, n1, n2, n3, i)
+#pragma omp parallel for if (parallel_num == 2)
         for (int j = 0; j < n3; j++) {
             for (int k = 0; k < n2; k++) {
                 matrix_C_[i][j] += matrix_A_[i][k] * matrix_B_[k][j];
@@ -61,7 +61,7 @@ float linear_variant_of_multiplication(vector<vector<int>>& matrix_A_, vector<ve
 
 
 float block_variant_of_multiplication(vector<vector<int>>& matrix_A_, vector<vector<int>>& matrix_B_,
-                                     vector<vector<int>>& matrix_C_, int parallel_num, int block_size) {
+                                      vector<vector<int>>& matrix_C_, int parallel_num, int block_size) {
     unsigned long n1 = matrix_A_.size();
     unsigned long n2 = matrix_A_[0].size();
     unsigned long n3 = matrix_B_[0].size();
@@ -70,9 +70,9 @@ float block_variant_of_multiplication(vector<vector<int>>& matrix_A_, vector<vec
     unsigned long q3 = n3 / block_size;
     matrix_C_.assign(n1, vector<int>(n3, 0));
     clock_t begin_time = clock();
-#pragma omp parallel for if (parallel_num == 1) default(none) shared(matrix_A_, matrix_B_, matrix_C_, n1, n2, n3, q1, q2, q3, parallel_num, block_size)
+#pragma omp parallel for if (parallel_num == 1)
     for (int i1 = 0; i1 < q1; i1++) {
-#pragma omp parallel for if (parallel_num == 2) default(none) shared(matrix_A_, matrix_B_, matrix_C_, n1, n2, n3, q1, q2, q3, parallel_num, block_size, i1)
+#pragma omp parallel for if (parallel_num == 2)
         for (int j1 = 0; j1 < q2; j1++) {
             for (int k1 = 0; k1 < q3; k1++) {
                 for (int i2 = 0; i2 < block_size; i2++) {
@@ -114,8 +114,10 @@ int main(){
                 number_of_columns_B = sizes_of_matrix;
 
         vector<vector<int>> matrix_A, matrix_B, matrix_C(number_of_rows_A, vector<int>(number_of_rows_B, 0));
+
         matrix_A = generate_matrix(number_of_rows_A, number_of_columns_A);
         matrix_B = generate_matrix(number_of_rows_B, number_of_columns_B);
+
         for (int sizes_of_block : sizes_of_blocks) {
 
             size_of_block += get_json_pair(to_string(counter), to_string(sizes_of_block));
@@ -141,6 +143,7 @@ int main(){
             cout << counter << "\n";
         }
     }
+    
     results << "{ ";
     results << "\"Size of matrices\": {" << size_of_matrix.substr(0, size_of_matrix.size()-2).c_str() << "}" << ", ";
     results << "\"Size of blocks\": {" << size_of_block.substr(0, size_of_block.size()-2).c_str() << "}" << ", ";
@@ -148,5 +151,7 @@ int main(){
     results << "\"First loop\": {" << first_loop_result.substr(0, first_loop_result.size()-2).c_str() << "}" << ", ";
     results << "\"Second loop\": {" << second_loop_result.substr(0, second_loop_result.size()-2).c_str() << "}" << "}";
     results.close();
+
     return 0;
+
 }
